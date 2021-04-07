@@ -36,7 +36,7 @@ const ListBox = styled.div`
 const Loader = styled.div`
 	height: 150px;
 	box-sizing: border-box;
-	background-color: #bfc564;
+	background-color: #2b2e08;
 	display: flex;
 	justify-content: center;
 	align-items: center;

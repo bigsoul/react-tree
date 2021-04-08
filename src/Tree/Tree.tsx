@@ -11,7 +11,7 @@ interface ITreeProps {
 }
 
 const Tree = (props: ITreeProps) => {
-	console.log('Tree render')
+	console.log('Tree - render')
 
 	return (
 		<div id='Tree'>
@@ -20,6 +20,11 @@ const Tree = (props: ITreeProps) => {
 				dataList={props.dataList}
 				dataOffset={props.dataOffset}
 				scrollOffset={props.scrollOffset}
+				dataItemHeight={30}
+				loaderUpHeight={50}
+				loaderDownHeight={50}
+				preLoaderUpMaxHeight={150}
+				preLoaderDownMaxHeight={150}
 			>
 				{(props: ITreeItemProps) => (
 					<TreeItem>

@@ -76,7 +76,7 @@ interface ITreeListState {
 	preLoaderDownHeight: number
 }
 
-const MutationState = { listBoxHeight: 0 }
+const MutationState = { listBoxHeight: 0, scrollOffset: 0 }
 
 class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 	listBoxRef: RefObject<HTMLDivElement>

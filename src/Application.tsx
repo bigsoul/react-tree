@@ -11,7 +11,7 @@ export interface IDataItem {
 
 const Dummy = styled.div`
 	width: 400px;
-	height: 530px;
+	height: 40%;
 	box-sizing: border-box;
 	display: flex;
 	justify-content: center;

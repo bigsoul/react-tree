@@ -18,6 +18,7 @@
     "react": "^17.0.2",
     "react-addons-create-fragment": "^15.6.2",
     "react-dom": "^17.0.2",
+    "react-resize-detector": "^6.6.4",
     "react-scripts": "4.0.3",
     "react-window": "^1.8.6",
     "styled-components": "^5.2.2",

@@ -18,7 +18,7 @@ interface ITreeBranchProps {
 const TreeBranch = (props: ITreeBranchProps) => {
 	console.log('TreeBranch - render')
 
-	return <BranchBox id='TreeBranch'>branch box</BranchBox>
+	return <BranchBox id='tree-branch'>branch box</BranchBox>
 }
 
 export default TreeBranch

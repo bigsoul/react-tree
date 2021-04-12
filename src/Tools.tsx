@@ -52,7 +52,7 @@ const Tools = (props: IToolsProps) => {
 	}
 
 	return (
-		<ToolsStyled>
+		<ToolsStyled id='tools'>
 			<Column>
 				<ButtonMount onClick={props.onClickMount}>MOUNT</ButtonMount>
 				<ButtonUnmount onClick={props.onClickUnmount}>

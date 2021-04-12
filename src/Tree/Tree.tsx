@@ -2,6 +2,11 @@ import React from 'react'
 import TreeList from './TreeList'
 import TreeItem, { ITreeItemProps } from './TreeItem'
 import TreeBranch from './TreeBranch'
+import styled from 'styled-components'
+
+const TreeStyled = styled.div`
+	height: 40%;
+`
 
 interface ITreeProps {
 	dataList: { id: number; name: string }[]
@@ -14,7 +19,7 @@ const Tree = (props: ITreeProps) => {
 	console.log('Tree - render')
 
 	return (
-		<div id='Tree'>
+		<TreeStyled id='tree'>
 			<TreeBranch open={true} />
 			<TreeList
 				dataList={props.dataList}
@@ -32,7 +37,7 @@ const Tree = (props: ITreeProps) => {
 					</TreeItem>
 				)}
 			</TreeList>
-		</div>
+		</TreeStyled>
 	)
 }
 

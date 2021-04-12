@@ -19,7 +19,7 @@ interface ITreeItemPrivateProps {
 }
 
 const TreeItem = (props: ITreeItemPrivateProps) => {
-	return <Item id='TreeItem'>{props.children}</Item>
+	return <Item id='tree-item'>{props.children}</Item>
 }
 
 export default TreeItem

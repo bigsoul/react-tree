@@ -5,7 +5,8 @@ import TreeBranch from './TreeBranch'
 import styled from 'styled-components'
 
 const TreeStyled = styled.div`
-	height: 40%;
+	position: relative;
+	height: 50%;
 `
 
 interface ITreeProps {

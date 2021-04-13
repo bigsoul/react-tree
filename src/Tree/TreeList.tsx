@@ -1,30 +1,17 @@
 import {
 	createElement,
-	cloneElement,
-	Component,
 	ReactNode,
-	ReactChild,
-	ReactInstance,
-	ReactText,
-	ReactChildren,
-	ReactElement,
-	ReactComponentElement,
-	ReactHTML,
 	FunctionComponent,
-	ReactFragment,
-	ReactPortal,
 	createRef,
 	RefObject,
 	PureComponent,
 } from 'react'
-import { ReactElementType } from 'react-window'
 import styled from 'styled-components'
 import { IDataItem } from '../Application'
-import TreeItem, { ITreeItemProps } from './TreeItem'
-import ReactResizeDetector from 'react-resize-detector'
+import { ITreeItemProps } from './TreeItem'
 
 const ListBox = styled.div`
-	position: relative;
+	position: absolute;
 	width: 400px;
 	height: 50%;
 	border: 1px solid white;
@@ -88,6 +75,7 @@ const mutationState = { listBoxHeight: 0, scrollOffset: 0 }
 class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 	listBoxRef: RefObject<HTMLDivElement>
 	resizeObserver: ResizeObserver
+	scrollingTimeout: NodeJS.Timeout | undefined
 
 	constructor(props: ITreeListProps) {
 		super(props)
@@ -105,8 +93,8 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 		this.resizeObserver = new ResizeObserver(
 			(entries: ResizeObserverEntry[]) => {
 				const entry = entries[0]
-				//mutationState.listBoxHeight = entry.contentRect.height
-				//this.setState({})
+				mutationState.listBoxHeight = entry.contentRect.height
+				this.setState({})
 			}
 		)
 
@@ -156,10 +144,22 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 		}
 	}
 
+	handlerOnScrollStop = (scrollTop: number) => {
+		console.log('TreeList - handlerOnScrollStop - ' + scrollTop)
+
+		if (this.scrollingTimeout) clearTimeout(this.scrollingTimeout)
+
+		this.scrollingTimeout = setTimeout(() => {
+			this.handlerOnScroll(scrollTop)
+		}, 64)
+	}
+
 	handlerOnScroll = (scrollTop: number) => {
 		console.log('TreeList - handlerOnScroll - ' + scrollTop)
 
 		const { props, state, listBoxRef } = this
+
+		console.log('state(' + scrollTop + '): ', state, listBoxRef.current)
 
 		if (scrollTop < state.preLoaderUpTop)
 			listBoxRef.current?.scrollTo({
@@ -251,7 +251,28 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 
 		return (
 			<ListBox
-				onScroll={e => this.handlerOnScroll(e.currentTarget.scrollTop)}
+				onScroll={e =>
+					this.handlerOnScrollStop(e.currentTarget.scrollTop)
+				}
+				onMouseDown={e => {
+					console.log('onMouseDown: ', e)
+				}}
+				onMouseUp={e => {
+					console.log('onMouseUp: ', e)
+				}}
+				/*onMouseEnter={e => {
+					console.log('onMouseEnter: ', e)
+				}}
+				onMouseLeave={e => {
+					console.log('onMouseLeave: ', e)
+				}}*/
+				/*onMouseOver={e => {
+					console.log('onMouseOver: ', e)
+				}}
+				onMouseOut={e => {
+					console.log('onMouseOut: ', e)
+				}}*/
+
 				ref={this.listBoxRef}
 				id='tree-list'
 			>

@@ -23,27 +23,6 @@ const ListBox = styled.div`
 	scrollbar-width: none;
 `
 
-const FakeBox = styled.div`
-	position: absolute;
-	//top: calc(50% + 30px);
-	width: 400px;
-	height: 50%;
-	//border: 1px solid white;
-	box-sizing: border-box;
-	overflow-y: scroll;
-	&::-webkit-scrollbar {
-		width: 0px;
-	}
-	scrollbar-width: none;
-	//pointer-events: none;
-`
-
-const FakeListBox = styled.div`
-	height: 300%;
-	//pointer-events: none;
-	//background: linear-gradient(to top, #e4af9d 20%, #e4e4d8 50%, #a19887 80%);
-`
-
 const Loader = styled.div<{ height: number }>`
 	height: ${p => p.height}px;
 	box-sizing: border-box;
@@ -168,23 +147,28 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 	}
 
 	handlerOnScrollStop = (scrollTop: number) => {
-		console.log('TreeList - handlerOnScrollStop - ' + scrollTop)
+		console.log(
+			'TreeList - handlerOnScrollStop - ' +
+				scrollTop +
+				' current: ' +
+				this.listBoxRef.current?.scrollTop
+		)
 		if (this.listBoxRef.current) {
-			//this.listBoxRef.current.scrollTop = mutationState.scrollOffset
 			let scroll = mutationState.scrollOffset - scrollTop
 			//if (!scroll) return
 			if (scroll > 0) scroll = 1
 			if (scroll < 0) scroll = -1
 			if (scroll === 0) return
-			console.log('FakeBox - onScroll: ', scroll)
+			console.log(
+				'FakeBox - onScroll: scroll: ' +
+					scroll +
+					' scrollTop:  ' +
+					scrollTop +
+					' mutationState.scrollOffset: ' +
+					mutationState.scrollOffset
+			)
 			this.handlerOnScroll(scroll * 30 * -1)
 		}
-
-		/*if (this.scrollingTimeout) clearTimeout(this.scrollingTimeout)
-
-		this.scrollingTimeout = setTimeout(() => {
-			this.handlerOnScroll(scrollTop)
-		}, 64)*/
 	}
 
 	handlerOnScroll = (scrollTopOffset: number) => {
@@ -192,14 +176,8 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 
 		let scrollTop = mutationState.scrollOffset + scrollTopOffset
 
-		//console.log('state(' + scrollTop + '): ', state, listBoxRef.current)
-
 		if (scrollTop < state.preLoaderUpTop) {
 			scrollTop = props.loaderUpHeight
-			/*listBoxRef.current?.scrollTo({
-				top: props.loaderUpHeight,
-				behavior: 'smooth',
-			})*/
 		}
 
 		if (
@@ -214,18 +192,10 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 				state.dataListHeight +
 				state.extenderHeight -
 				mutationState.listBoxHeight
-			/*listBoxRef.current?.scrollTo({
-				top:
-					props.loaderUpHeight +
-					state.dataListHeight +
-					state.extenderHeight -
-					mutationState.listBoxHeight,
-				behavior: 'smooth',
-			})*/
 		}
 
 		if (listBoxRef.current) listBoxRef.current.scrollTop = scrollTop
-		mutationState.scrollOffset = scrollTop // + props.loaderUpHeight
+		mutationState.scrollOffset = scrollTop
 		console.log('TreeList - handlerOnScroll - ' + scrollTop)
 		this.setState({})
 	}
@@ -293,52 +263,15 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 		)
 
 		return (
-			<>
-				{/*<FakeBox
-						onMouseEnter={e => (e.currentTarget.scrollTop = 200)}
-						onScroll={e => {
-							e.stopPropagation()
-							const scroll = 200 - e.currentTarget.scrollTop
-							if (!scroll) return
-							console.log('FakeBox - onScroll: ', scroll)
-							this.handlerOnScroll(scroll * 30 * -1)
-							e.currentTarget.scrollTop = 200
-						}}
-						onClick={e => {
-							//this.listBoxRef.current?.dispatchEvent(e.nativeEvent)
-						}}
-					>
-						<FakeListBox />
-					</FakeBox>*/}
-				<ListBox
-					onScroll={e =>
-						this.handlerOnScrollStop(e.currentTarget.scrollTop)
-					}
-					/*onMouseDown={e => {
-						console.log('onMouseDown: ', e)
-					}}
-					onMouseUp={e => {
-						console.log('onMouseUp: ', e)
-					}}*/
-					/*onMouseEnter={e => {
-					console.log('onMouseEnter: ', e)
-				}}
-				onMouseLeave={e => {
-					console.log('onMouseLeave: ', e)
-				}}*/
-					/*onMouseOver={e => {
-					console.log('onMouseOver: ', e)
-				}}
-				onMouseOut={e => {
-					console.log('onMouseOut: ', e)
-				}}*/
-
-					ref={this.listBoxRef}
-					id='tree-list'
-				>
-					{items}
-				</ListBox>
-			</>
+			<ListBox
+				onScroll={e =>
+					this.handlerOnScrollStop(e.currentTarget.scrollTop)
+				}
+				ref={this.listBoxRef}
+				id='tree-list'
+			>
+				{items}
+			</ListBox>
 		)
 	}
 

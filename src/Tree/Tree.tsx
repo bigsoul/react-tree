@@ -27,8 +27,8 @@ const Tree = (props: ITreeProps) => {
 				dataOffset={props.dataOffset}
 				scrollOffset={props.scrollOffset}
 				dataItemHeight={30}
-				loaderUpHeight={50}
-				loaderDownHeight={50}
+				loaderUpHeight={0}
+				loaderDownHeight={0}
 				preLoaderUpMaxHeight={150}
 				preLoaderDownMaxHeight={150}
 			>

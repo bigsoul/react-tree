@@ -3,7 +3,6 @@ import {
 	ReactNode,
 	FunctionComponent,
 	createRef,
-	RefObject,
 	PureComponent,
 } from 'react'
 import styled from 'styled-components'
@@ -27,9 +26,6 @@ const Loader = styled.div<{ height: number }>`
 	height: ${p => p.height}px;
 	box-sizing: border-box;
 	background-color: #2b2e08;
-	display: flex;
-	justify-content: center;
-	align-items: center;
 `
 
 const PreLoader = styled.div<{ top: number; height: number }>`
@@ -70,10 +66,14 @@ interface ITreeListState {
 	extenderHeight: number
 }
 
-const mutationState = { listBoxHeight: 0, scrollOffset: 0 }
+const mutationState = {
+	listBoxHeight: 0,
+	scrollOffset: 0,
+	scrollStep: 0,
+	listBoxRef: createRef<HTMLDivElement>(),
+}
 
 class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
-	listBoxRef: RefObject<HTMLDivElement>
 	resizeObserver: ResizeObserver
 	scrollingTimeout: NodeJS.Timeout | undefined
 
@@ -89,7 +89,6 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 			extenderHeight: 0,
 		}
 
-		this.listBoxRef = createRef()
 		this.resizeObserver = new ResizeObserver(
 			(entries: ResizeObserverEntry[]) => {
 				const entry = entries[0]
@@ -100,11 +99,13 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 			}
 		)
 
-		mutationState.listBoxHeight = 0
 		mutationState.scrollOffset = props.scrollOffset + props.loaderUpHeight
 	}
 
-	static getDerivedStateFromProps = (props: ITreeListProps) => {
+	static getDerivedStateFromProps = (
+		props: ITreeListProps,
+		state: ITreeListState
+	) => {
 		console.log('TreeList - getDerivedStateFromProps')
 
 		const dataListHeight = props.dataItemHeight * props.dataList.length
@@ -135,74 +136,96 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 					: halfHeight
 		}
 
-		return {
-			dataListHeight: dataListHeight,
-			preLoaderUpTop: props.loaderUpHeight,
-			preLoaderDownTop:
-				props.loaderUpHeight + dataListHeight - preLoaderDownHeight,
-			preLoaderUpHeight: preLoaderUpHeight,
-			preLoaderDownHeight: preLoaderDownHeight,
-			extenderHeight: extenderHeight,
-		}
-	}
+		const preLoaderUpTop = props.loaderUpHeight
+		const preLoaderDownTop =
+			props.loaderUpHeight + dataListHeight - preLoaderDownHeight
 
-	handlerOnScrollStop = (scrollTop: number) => {
-		console.log(
-			'TreeList - handlerOnScrollStop - ' +
-				scrollTop +
-				' current: ' +
-				this.listBoxRef.current?.scrollTop
-		)
-		if (this.listBoxRef.current) {
-			let scroll = mutationState.scrollOffset - scrollTop
-			//if (!scroll) return
-			if (scroll > 0) scroll = 1
-			if (scroll < 0) scroll = -1
-			if (scroll === 0) return
-			console.log(
-				'FakeBox - onScroll: scroll: ' +
-					scroll +
-					' scrollTop:  ' +
-					scrollTop +
-					' mutationState.scrollOffset: ' +
-					mutationState.scrollOffset
-			)
-			this.handlerOnScroll(scroll * 30 * -1)
-		}
-	}
+		//---
 
-	handlerOnScroll = (scrollTopOffset: number) => {
-		const { props, state, listBoxRef } = this
+		const { listBoxRef, listBoxHeight } = mutationState
 
-		let scrollTop = mutationState.scrollOffset + scrollTopOffset
+		let scrollTop =
+			mutationState.scrollOffset +
+			mutationState.scrollStep * props.dataItemHeight * -1
 
-		if (scrollTop < state.preLoaderUpTop) {
+		if (scrollTop < preLoaderUpTop) {
 			scrollTop = props.loaderUpHeight
 		}
 
 		if (
 			scrollTop >
 			props.loaderUpHeight +
-				state.dataListHeight +
-				state.extenderHeight -
-				mutationState.listBoxHeight
+				dataListHeight +
+				extenderHeight -
+				listBoxHeight
 		) {
 			scrollTop =
 				props.loaderUpHeight +
-				state.dataListHeight +
-				state.extenderHeight -
-				mutationState.listBoxHeight
+				dataListHeight +
+				extenderHeight -
+				listBoxHeight
 		}
 
+		/*if (dataListHeight !== state.dataListHeight)
+			scrollTop =
+				mutationState.scrollOffset -
+				(dataListHeight - state.dataListHeight)*/
+
 		if (listBoxRef.current) listBoxRef.current.scrollTop = scrollTop
+
+		/*if (listBoxRef.current)
+			listBoxRef.current.scrollTo({
+				top: mutationState.scrollOffset,
+				behavior: 'smooth',
+			})*/
+
 		mutationState.scrollOffset = scrollTop
-		console.log('TreeList - handlerOnScroll - ' + scrollTop)
+		mutationState.scrollStep = 0
+
+		//---
+
+		return {
+			dataListHeight: dataListHeight,
+			preLoaderUpTop: preLoaderUpTop,
+			preLoaderDownTop: preLoaderDownTop,
+			preLoaderUpHeight: preLoaderUpHeight,
+			preLoaderDownHeight: preLoaderDownHeight,
+			extenderHeight: extenderHeight,
+		}
+	}
+
+	handlerOnScroll = (scrollTop: number) => {
+		//console.log('TreeList - handlerOnScrollStop')
+
+		let scroll = mutationState.scrollOffset - scrollTop
+
+		if (scroll > 0) scroll = 1
+		if (scroll < 0) scroll = -1
+		if (scroll === 0) return
+
+		mutationState.scrollStep += scroll
+
 		this.setState({})
 	}
 
-	handlerOnResize = (height: number) => {
-		console.log('TreeList - handlerOnResize')
-		this.setState({})
+	handlerOnWheel = (deltaY: number) => {
+		const { state } = this
+
+		if (mutationState.scrollOffset !== 0 && deltaY < 0) return
+		if (
+			mutationState.scrollOffset <
+				state.dataListHeight - mutationState.listBoxHeight &&
+			deltaY > 0
+		)
+			return
+
+		//console.log('TreeList - handlerOnWheel: ', deltaY)
+
+		if (deltaY > 0) {
+			console.log('LOAD DATA: DOWN')
+		} else {
+			console.log('LOAD DATA: UP')
+		}
 	}
 
 	render = () => {
@@ -212,13 +235,13 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 
 		const items: ReactNode[] = []
 
-		items.push(
+		/*items.push(
 			<Loader
 				id='loader-up'
 				key='loader-up'
 				height={props.loaderUpHeight}
 			/>
-		)
+		)*/
 
 		for (let i = 0; i < props.dataList.length; i++) {
 			const dataItem = props.dataList[i]
@@ -231,7 +254,7 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 			)
 		}
 
-		items.push(
+		/*items.push(
 			<Extender
 				id='extender'
 				key='extender'
@@ -260,14 +283,13 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 				height={state.preLoaderDownHeight}
 				top={state.preLoaderDownTop}
 			/>
-		)
+		)*/
 
 		return (
 			<ListBox
-				onScroll={e =>
-					this.handlerOnScrollStop(e.currentTarget.scrollTop)
-				}
-				ref={this.listBoxRef}
+				onScroll={e => this.handlerOnScroll(e.currentTarget.scrollTop)}
+				onWheel={e => this.handlerOnWheel(e.deltaY)}
+				ref={mutationState.listBoxRef}
 				id='tree-list'
 			>
 				{items}
@@ -276,21 +298,26 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 	}
 
 	componentDidMount = () => {
-		if (this.listBoxRef.current) {
+		if (mutationState.listBoxRef.current) {
 			mutationState.listBoxHeight = Math.round(
-				this.listBoxRef.current.clientHeight
+				mutationState.listBoxRef.current.clientHeight
 			)
 
-			this.listBoxRef.current.scrollTop = mutationState.scrollOffset
+			mutationState.listBoxRef.current.scrollTop =
+				mutationState.scrollOffset
 
-			this.resizeObserver.observe(this.listBoxRef.current)
+			/*mutationState.listBoxRef.current.scrollTo({
+				top: mutationState.scrollOffset,
+			})*/
+
+			this.resizeObserver.observe(mutationState.listBoxRef.current)
 			this.setState({})
 		}
 	}
 
 	componentWillUnmount = () => {
-		if (this.listBoxRef.current)
-			this.resizeObserver.unobserve(this.listBoxRef.current)
+		if (mutationState.listBoxRef.current)
+			this.resizeObserver.unobserve(mutationState.listBoxRef.current)
 	}
 }
 

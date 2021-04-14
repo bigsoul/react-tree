@@ -35,6 +35,9 @@ const Tree = (props: ITreeProps) => {
 				{(props: ITreeItemProps) => (
 					<TreeItem>
 						<div id='my-content'>{props.dataItem.name}</div>
+
+						<button>1</button>
+						<button>2</button>
 					</TreeItem>
 				)}
 			</TreeList>

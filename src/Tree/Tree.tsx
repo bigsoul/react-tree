@@ -27,10 +27,19 @@ const Tree = (props: ITreeProps) => {
 				dataOffset={props.dataOffset}
 				scrollOffset={props.scrollOffset}
 				dataItemHeight={30}
-				loaderUpHeight={0}
-				loaderDownHeight={0}
 				preLoaderUpMaxHeight={150}
 				preLoaderDownMaxHeight={150}
+				onLoadUp={(dataOffset, isPreload) =>
+					console.log(
+						`LOAD DATA: UP [dataOffset = ${dataOffset}, isPreload = ${isPreload}]`
+					)
+				}
+				onLoadDown={(dataOffset, isPreload) =>
+					console.log(
+						`LOAD DATA: DOWN [dataOffset = ${dataOffset}, isPreload = ${isPreload}]`
+					)
+				}
+				onScroll={props.onScroll}
 			>
 				{(props: ITreeItemProps) => (
 					<TreeItem>

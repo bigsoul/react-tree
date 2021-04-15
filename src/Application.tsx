@@ -31,7 +31,7 @@ const Application = () => {
 	const [dataList] = useState<IDataItem[]>(initDataList)
 	const [dataOffset, setDataOffset] = useState(0)
 	const [dataLimit, setDataLimit] = useState(50)
-	const [scrollOffset, setScrollOffset] = useState(0)
+	const [scrollOffset, setScrollOffset] = useState(150)
 
 	const data = _.slice(dataList, dataOffset, dataOffset + dataLimit)
 
@@ -48,7 +48,7 @@ const Application = () => {
 			{isMounted ? (
 				<Tree
 					dataList={data}
-					dataOffset={scrollOffset}
+					dataOffset={dataOffset}
 					scrollOffset={scrollOffset}
 					onScroll={setScrollOffset}
 				/>

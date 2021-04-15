@@ -13,6 +13,8 @@ interface ITreeProps {
 	dataList: { id: number; name: string }[]
 	dataOffset: number
 	scrollOffset: number
+	onLoadUp?: (dataOffset: number, isPreload: boolean) => void
+	onLoadDown?: (dataOffset: number, isPreload: boolean) => void
 	onScroll: (scrollOffset: number) => void
 }
 
@@ -29,16 +31,8 @@ const Tree = (props: ITreeProps) => {
 				dataItemHeight={30}
 				preLoaderUpMaxHeight={150}
 				preLoaderDownMaxHeight={150}
-				onLoadUp={(dataOffset, isPreload) =>
-					console.log(
-						`LOAD DATA: UP [dataOffset = ${dataOffset}, isPreload = ${isPreload}]`
-					)
-				}
-				onLoadDown={(dataOffset, isPreload) =>
-					console.log(
-						`LOAD DATA: DOWN [dataOffset = ${dataOffset}, isPreload = ${isPreload}]`
-					)
-				}
+				onLoadUp={props.onLoadUp}
+				onLoadDown={props.onLoadDown}
 				onScroll={props.onScroll}
 			>
 				{(props: ITreeItemProps) => (

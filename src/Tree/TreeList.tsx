@@ -79,9 +79,8 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 
 		this.resizeObserver = new ResizeObserver(
 			(entries: ResizeObserverEntry[]) => {
-				const entry = entries[0]
 				mutationState.listBoxHeight = Math.round(
-					entry.contentRect.height
+					entries[0].contentRect.height
 				)
 				this.setState({})
 			}

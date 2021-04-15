@@ -50,6 +50,18 @@ const Application = () => {
 					dataList={data}
 					dataOffset={dataOffset}
 					scrollOffset={scrollOffset}
+					onLoadUp={(dataOffset, isPreload) => {
+						console.log(
+							`LOAD DATA: UP [dataOffset = ${dataOffset}, isPreload = ${isPreload}]`
+						)
+						setDataOffset(dataOffset - 30)
+					}}
+					onLoadDown={(dataOffset, isPreload) => {
+						console.log(
+							`LOAD DATA: DOWN [dataOffset = ${dataOffset}, isPreload = ${isPreload}]`
+						)
+						setDataOffset(dataOffset + 30)
+					}}
 					onScroll={setScrollOffset}
 				/>
 			) : (

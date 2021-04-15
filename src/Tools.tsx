@@ -34,8 +34,20 @@ interface IToolsProps {
 const Tools = (props: IToolsProps) => {
 	console.log('Tools - render')
 
+	const [propsDataOffset, setPropsDataOffset] = useState(props.dataOffset)
+	const [propsDataLimit, setPropsDataLimit] = useState(props.dataLimit)
+
 	const [dataOffset, setDataOffset] = useState(props.dataOffset)
 	const [dataLimit, setDataLimit] = useState(props.dataLimit)
+
+	if (propsDataOffset !== props.dataOffset) {
+		setPropsDataOffset(props.dataOffset)
+		setDataOffset(props.dataOffset)
+	}
+	if (propsDataLimit !== props.dataLimit) {
+		setPropsDataLimit(props.dataLimit)
+		setDataLimit(props.dataLimit)
+	}
 
 	const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault()

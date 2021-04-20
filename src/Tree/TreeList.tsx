@@ -39,12 +39,13 @@ interface ITreeListProps {
 	children: FunctionComponent<ITreeItemProps>
 	dataList: IDataItem[]
 	dataOffset: number
+	dataLimit: number
 	dataItemHeight: number
 	scrollOffset: number
 	preLoaderUpMaxHeight: number
 	preLoaderDownMaxHeight: number
-	onLoadUp?: (dataOffset: number, isPreload: boolean) => void
-	onLoadDown?: (dataOffset: number, isPreload: boolean) => void
+	onLoadUp?: (dataOffset: number, dataLimit: number) => void
+	onLoadDown?: (dataOffset: number, dataLimit: number) => void
 	onScroll?: (scrollOffset: number) => void
 }
 
@@ -57,6 +58,7 @@ interface ITreeListState {
 }
 
 const mutationState = {
+	dataOffset: 0,
 	listBoxHeight: 0,
 	scrollOffset: 0,
 	scrollStep: 0,
@@ -86,16 +88,21 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 			}
 		)
 
+		mutationState.dataOffset = props.dataOffset
 		mutationState.scrollOffset = props.scrollOffset
 	}
 
 	static getDerivedStateFromProps = (
 		props: ITreeListProps,
 		state: ITreeListState
-	) => {
-		console.log('TreeList - getDerivedStateFromProps')
+	): ITreeListState => {
+		console.debug('TreeList - getDerivedStateFromProps')
+
+		// basic properties of the calculation algorithm
 
 		const dataListHeight = props.dataItemHeight * props.dataList.length
+
+		// pre-loaders height of the calculation algorithm
 
 		let preLoaderUpHeight = 0
 		let preLoaderDownHeight = 0
@@ -103,49 +110,72 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 		if (dataListHeight > mutationState.listBoxHeight) {
 			const availableHeights =
 				dataListHeight - mutationState.listBoxHeight
+
 			const halfHeight = Math.floor(availableHeights / 2)
+
 			preLoaderUpHeight =
 				halfHeight > props.preLoaderUpMaxHeight
 					? props.preLoaderUpMaxHeight
 					: halfHeight
+
 			preLoaderDownHeight =
 				halfHeight > props.preLoaderDownMaxHeight
 					? props.preLoaderDownMaxHeight
 					: halfHeight
 		}
 
+		// pre-loaders position of the calculation algorithm
+
 		const preLoaderUpTop = 0
 		const preLoaderDownTop = dataListHeight - preLoaderDownHeight
 
-		const { listBoxRef, listBoxHeight } = mutationState
+		// calculation offset of new scroll-top position
 
 		let scrollTop =
 			mutationState.scrollOffset +
 			mutationState.scrollStep * props.dataItemHeight * -1
 
 		if (scrollTop < 0) {
-			scrollTop = props.scrollOffset
+			scrollTop = 0
 		}
 
-		if (scrollTop >= dataListHeight - listBoxHeight) {
-			scrollTop = dataListHeight - listBoxHeight
+		if (scrollTop >= dataListHeight - mutationState.listBoxHeight) {
+			scrollTop = dataListHeight - mutationState.listBoxHeight
 			if (scrollTop < 0) scrollTop = 0
 		}
 
 		if (
 			scrollTop > preLoaderUpTop &&
-			scrollTop < dataListHeight - listBoxHeight
+			scrollTop < dataListHeight - mutationState.listBoxHeight
 		) {
 			const residual = scrollTop % props.dataItemHeight
 			if (residual)
 				scrollTop = scrollTop - residual + props.dataItemHeight
 		}
 
-		if (dataListHeight === state.dataListHeight) {
+		// calculation offset of data list position
+
+		if (props.dataOffset !== mutationState.dataOffset) {
+			let residual = props.dataOffset - mutationState.dataOffset
+			scrollTop -= residual * props.dataItemHeight
+		}
+
+		// calculation of the event observer
+
+		if (
+			dataListHeight === state.dataListHeight &&
+			props.dataOffset === mutationState.dataOffset
+		) {
 			if (scrollTop >= preLoaderUpTop && scrollTop < preLoaderUpHeight) {
 				if (mutationState.scrollOffset - scrollTop > 0) {
-					if (props.onLoadUp)
-						setTimeout(props.onLoadUp, 0, props.dataOffset, true)
+					if (props.onLoadUp) {
+						const newDataOffset = calculateNewDataOffset(
+							props.dataOffset,
+							props.dataLimit,
+							true
+						)
+						props.onLoadUp(newDataOffset, props.dataLimit)
+					}
 				}
 			}
 
@@ -155,13 +185,25 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 					preLoaderDownTop + preLoaderDownHeight
 			)
 				if (mutationState.scrollOffset - scrollTop < 0) {
-					if (props.onLoadDown)
-						setTimeout(props.onLoadDown, 0, props.dataOffset, true)
+					if (props.onLoadDown) {
+						const newDataOffset = calculateNewDataOffset(
+							props.dataOffset,
+							props.dataLimit,
+							false
+						)
+						props.onLoadDown(newDataOffset, props.dataLimit)
+					}
 				}
 		}
 
-		if (listBoxRef.current) listBoxRef.current.scrollTop = scrollTop
+		// applay to DOM
 
+		if (mutationState.listBoxRef.current)
+			mutationState.listBoxRef.current.scrollTop = scrollTop
+
+		// fix the state
+
+		mutationState.dataOffset = props.dataOffset
 		mutationState.scrollOffset = scrollTop
 		mutationState.scrollStep = 0
 
@@ -175,7 +217,7 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 	}
 
 	handlerOnScroll = (scrollTop: number) => {
-		//console.log('TreeList - handlerOnScrollStop')
+		console.debug('TreeList - handlerOnScrollStop')
 
 		let scroll = mutationState.scrollOffset - scrollTop
 
@@ -189,25 +231,36 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 	}
 
 	handlerOnWheel = (deltaY: number) => {
-		//console.log('TreeList - handlerOnWheel: ', deltaY)
+		//console.debug('TreeList - handlerOnWheel: ', deltaY)
 
 		const { props, state } = this
 
-		if (mutationState.scrollOffset === 0 && deltaY < 0)
-			if (props.onLoadUp)
-				setTimeout(props.onLoadUp, 0, props.dataOffset, false)
+		if (mutationState.scrollOffset === 0 && deltaY < 0 && props.onLoadUp) {
+			const newDataOffset = calculateNewDataOffset(
+				props.dataOffset,
+				props.dataLimit,
+				true
+			)
+			props.onLoadUp(newDataOffset, props.dataLimit)
+		}
 
 		if (
 			mutationState.scrollOffset >=
 				state.dataListHeight - mutationState.listBoxHeight &&
-			deltaY > 0
-		)
-			if (props.onLoadDown)
-				setTimeout(props.onLoadDown, 0, props.dataOffset, false)
+			deltaY > 0 &&
+			props.onLoadDown
+		) {
+			const newDataOffset = calculateNewDataOffset(
+				props.dataOffset,
+				props.dataLimit,
+				false
+			)
+			props.onLoadDown(newDataOffset, props.dataLimit)
+		}
 	}
 
 	render = () => {
-		console.log('TreeList - render')
+		console.debug('TreeList - render')
 
 		const { props, state } = this
 
@@ -273,6 +326,20 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 		if (this.props.onScroll)
 			setTimeout(this.props.onScroll, 0, mutationState.scrollOffset)
 	}
+}
+
+const calculateNewDataOffset = (
+	dataOffset: number,
+	dataLimit: number,
+	isUpward: boolean
+) => {
+	const newDataLimit = dataLimit - 20 > 0 ? dataLimit - 20 : dataLimit
+
+	if (isUpward && dataOffset - dataLimit < 0) return 0
+	if (isUpward) return dataOffset - newDataLimit
+	if (!isUpward) return dataOffset + newDataLimit
+
+	return 0
 }
 
 export default TreeList

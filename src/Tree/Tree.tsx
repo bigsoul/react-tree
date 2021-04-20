@@ -12,9 +12,10 @@ const TreeStyled = styled.div`
 interface ITreeProps {
 	dataList: { id: number; name: string }[]
 	dataOffset: number
+	dataLimit: number
 	scrollOffset: number
-	onLoadUp?: (dataOffset: number, isPreload: boolean) => void
-	onLoadDown?: (dataOffset: number, isPreload: boolean) => void
+	onLoadUp?: (dataOffset: number, dataLimit: number) => void
+	onLoadDown?: (dataOffset: number, dataLimit: number) => void
 	onScroll: (scrollOffset: number) => void
 }
 
@@ -27,6 +28,7 @@ const Tree = (props: ITreeProps) => {
 			<TreeList
 				dataList={props.dataList}
 				dataOffset={props.dataOffset}
+				dataLimit={props.dataLimit}
 				scrollOffset={props.scrollOffset}
 				dataItemHeight={30}
 				preLoaderUpMaxHeight={150}

@@ -49,18 +49,21 @@ const Application = () => {
 				<Tree
 					dataList={data}
 					dataOffset={dataOffset}
+					dataLimit={dataLimit}
 					scrollOffset={scrollOffset}
-					onLoadUp={(dataOffset, isPreload) => {
-						console.log(
-							`LOAD DATA: UP [dataOffset = ${dataOffset}, isPreload = ${isPreload}]`
+					onLoadUp={(dataOffset: number, dataLimit: number) => {
+						console.debug(
+							`LOAD DATA: UP [dataOffset = ${dataOffset}, dataLimit = ${dataLimit}]`
 						)
-						setDataOffset(dataOffset - 30)
+						setDataOffset(dataOffset)
+						setDataLimit(dataLimit)
 					}}
-					onLoadDown={(dataOffset, isPreload) => {
-						console.log(
-							`LOAD DATA: DOWN [dataOffset = ${dataOffset}, isPreload = ${isPreload}]`
+					onLoadDown={(dataOffset: number, dataLimit: number) => {
+						console.debug(
+							`LOAD DATA: DOWN [dataOffset = ${dataOffset}, dataLimit = ${dataLimit}]`
 						)
-						setDataOffset(dataOffset + 30)
+						setDataOffset(dataOffset)
+						setDataLimit(dataLimit)
 					}}
 					onScroll={setScrollOffset}
 				/>

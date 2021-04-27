@@ -24,9 +24,9 @@ const ListBox = styled.div`
 
 const PreLoader = styled.div<{ top: number; height: number }>`
 	position: absolute;
-	top: ${p => p.top}px;
+	top: ${(p) => p.top}px;
 	left: 0px;
-	height: ${p => p.height}px;
+	height: ${(p) => p.height}px;
 	width: 100%;
 	background: rgba(166, 89, 160, 0.2);
 	display: flex;
@@ -59,6 +59,7 @@ interface ITreeListState {
 
 const mutationState = {
 	dataOffset: 0,
+	dataListHeight: 0,
 	listBoxHeight: 0,
 	scrollOffset: 0,
 	scrollStep: 0,
@@ -81,9 +82,7 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 
 		this.resizeObserver = new ResizeObserver(
 			(entries: ResizeObserverEntry[]) => {
-				mutationState.listBoxHeight = Math.round(
-					entries[0].contentRect.height
-				)
+				mutationState.listBoxHeight = Math.round(entries[0].contentRect.height)
 				this.setState({})
 			}
 		)
@@ -108,8 +107,7 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 		let preLoaderDownHeight = 0
 
 		if (dataListHeight > mutationState.listBoxHeight) {
-			const availableHeights =
-				dataListHeight - mutationState.listBoxHeight
+			const availableHeights = dataListHeight - mutationState.listBoxHeight
 
 			const halfHeight = Math.floor(availableHeights / 2)
 
@@ -133,14 +131,22 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 
 		let scrollTop =
 			mutationState.scrollOffset +
-			mutationState.scrollStep * props.dataItemHeight * -1
+			mutationState.scrollStep * props.dataItemHeight
 
 		if (scrollTop < 0) {
 			scrollTop = 0
 		}
 
-		if (scrollTop >= dataListHeight - mutationState.listBoxHeight) {
-			scrollTop = dataListHeight - mutationState.listBoxHeight
+		if (
+			scrollTop >=
+			dataListHeight -
+				mutationState.listBoxHeight +
+				(mutationState.dataListHeight - dataListHeight)
+		) {
+			scrollTop =
+				dataListHeight -
+				mutationState.listBoxHeight +
+				(mutationState.dataListHeight - dataListHeight)
 			if (scrollTop < 0) scrollTop = 0
 		}
 
@@ -149,14 +155,13 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 			scrollTop < dataListHeight - mutationState.listBoxHeight
 		) {
 			const residual = scrollTop % props.dataItemHeight
-			if (residual)
-				scrollTop = scrollTop - residual + props.dataItemHeight
+			if (residual) scrollTop = scrollTop - residual + props.dataItemHeight
 		}
 
 		// calculation offset of data list position
 
 		if (props.dataOffset !== mutationState.dataOffset) {
-			let residual = props.dataOffset - mutationState.dataOffset
+			const residual = props.dataOffset - mutationState.dataOffset
 			scrollTop -= residual * props.dataItemHeight
 		}
 
@@ -204,6 +209,7 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 		// fix the state
 
 		mutationState.dataOffset = props.dataOffset
+		mutationState.dataListHeight = dataListHeight
 		mutationState.scrollOffset = scrollTop
 		mutationState.scrollStep = 0
 
@@ -222,8 +228,8 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 		let scroll = mutationState.scrollOffset - scrollTop
 
 		if (scroll === 0) return
-		if (scroll > 0) scroll = 1
-		if (scroll < 0) scroll = -1
+		if (scroll > 0) scroll = -1
+		if (scroll < 0) scroll = 1
 
 		mutationState.scrollStep += scroll
 
@@ -296,8 +302,8 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 
 		return (
 			<ListBox
-				onScroll={e => this.handlerOnScroll(e.currentTarget.scrollTop)}
-				onWheel={e => this.handlerOnWheel(e.deltaY)}
+				onScroll={(e) => this.handlerOnScroll(e.currentTarget.scrollTop)}
+				onWheel={(e) => this.handlerOnWheel(e.deltaY)}
 				ref={mutationState.listBoxRef}
 				id='tree-list'
 			>
@@ -312,8 +318,7 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 				mutationState.listBoxRef.current.clientHeight
 			)
 
-			mutationState.listBoxRef.current.scrollTop =
-				mutationState.scrollOffset
+			mutationState.listBoxRef.current.scrollTop = mutationState.scrollOffset
 
 			this.resizeObserver.observe(mutationState.listBoxRef.current)
 			this.setState({})

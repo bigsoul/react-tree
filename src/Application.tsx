@@ -33,7 +33,7 @@ const Application = () => {
 	const [dataLimit, setDataLimit] = useState(50)
 	const [scrollOffset, setScrollOffset] = useState(150)
 
-	const data = _.slice(dataList, dataOffset, dataOffset + dataLimit)
+	let data = _.slice(dataList, dataOffset, dataOffset + dataLimit)
 
 	return (
 		<>
@@ -53,16 +53,19 @@ const Application = () => {
 					scrollOffset={scrollOffset}
 					onLoadUp={(dataOffset: number, dataLimit: number) => {
 						console.debug(
-							`LOAD DATA: UP [dataOffset = ${dataOffset}, dataLimit = ${dataLimit}]`
+							`LOAD DATA: UP [dataOffset = ${dataOffset}, dataLimit = ${dataLimit}, dataLength = ${data.length}]`
 						)
 						setDataOffset(dataOffset)
 						setDataLimit(dataLimit)
 					}}
 					onLoadDown={(dataOffset: number, dataLimit: number) => {
 						console.debug(
-							`LOAD DATA: DOWN [dataOffset = ${dataOffset}, dataLimit = ${dataLimit}]`
+							`LOAD DATA: DOWN [dataOffset = ${dataOffset}, dataLimit = ${dataLimit}, dataLength = ${data.length}]`
 						)
-						setDataOffset(dataOffset)
+						let _dataOffset = dataOffset
+						if (dataList.length < dataOffset + dataLimit)
+							_dataOffset = dataList.length - dataLimit
+						setDataOffset(_dataOffset)
 						setDataLimit(dataLimit)
 					}}
 					onScroll={setScrollOffset}

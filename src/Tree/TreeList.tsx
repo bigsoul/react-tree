@@ -22,7 +22,7 @@ const ListBox = styled.div`
 	scrollbar-width: none;
 `
 
-const PreLoader = styled.div<{ top: number; height: number }>`
+/*const PreLoader = styled.div<{ top: number; height: number }>`
 	position: absolute;
 	top: ${p => p.top}px;
 	left: 0px;
@@ -33,7 +33,7 @@ const PreLoader = styled.div<{ top: number; height: number }>`
 	justify-content: center;
 	align-items: center;
 	pointer-events: none;
-`
+`*/
 
 interface ITreeListProps {
 	children: FunctionComponent<ITreeItemProps>

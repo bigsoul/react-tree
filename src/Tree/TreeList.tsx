@@ -292,7 +292,7 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 	render = () => {
 		//console.debug('TreeList - render')
 
-		const { props, state } = this
+		const { props } = this
 
 		const items: ReactNode[] = []
 
@@ -306,6 +306,8 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 				})
 			)
 		}
+
+		/*const { state } = this
 
 		items.push(
 			<PreLoader
@@ -322,7 +324,7 @@ class TreeList extends PureComponent<ITreeListProps, ITreeListState> {
 				height={state.preLoaderDownHeight}
 				top={state.preLoaderDownTop}
 			/>
-		)
+		)*/
 
 		return (
 			<ListBox
